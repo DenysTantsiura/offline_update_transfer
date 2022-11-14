@@ -27,13 +27,14 @@ def scanning(folder: Path) -> None:
             continue
 
     # Working with a file if the element is not a folder
-    cloud_storage_files.append(item)
+        cloud_storage_files.append(item)
 
 def check_log_file(folder):
     for item in folder.iterdir():
         if item.is_file():
             if item.name[0].isdigit() and item.suffix == '.txt':
                 return item
+
     return False
 
 def check_upd_folder(folder):
@@ -42,6 +43,7 @@ def check_upd_folder(folder):
             inner_log = check_log_file(item)
             if inner_log:
                 return inner_log
+
     return False
 
 def scan_report(config):
@@ -69,19 +71,45 @@ def create_update(path_disk, log_file):
     with open(str(log_file), 'r', encoding='utf-8-sig') as fh:
         while True:
             current_file = fh.readline().split('\t')
+            if len(current_file) < 3:
+                break
             file = Path(current_file[0])
+            if not file.exists():
+                print(f'!Old file must be deleted?: \n{file}')
+                # if input('y or n? ') == 'y':
+                #     file.unlink()
+                continue
+
             size = int(current_file[1])
             time = int(current_file[2].rstrip('\n'))
             if int(file.stat().st_size) != size or int(file.stat().st_mtime) - time > 1:
-                # копіюємо нові файли за рез порівняння
-                update_file = ((path_disk.joinpath(name_upd_folder)).joinpath(str(file.parent).replace(str(path_disk),'',1))).joinpath(file.name)
+                # копіюємо змінені файли
+                # print(f's0:\n{path_disk}')
+                # print(f's1:\n{name_upd_folder}')
+                # print(f'''s2:\n{str(file.parent).replace(str(path_disk),'',1)}''')
+                # print(f's3:\n{file.name}')
+                update_file = ((path_disk.joinpath(name_upd_folder)).joinpath(str(file.parent).replace(str(path_disk),'',1)[1:])).joinpath(file.name)
+                # print(f'update_file:\n{update_file}')
                 update_file.parent.mkdir(exist_ok=True, parents=True)
-                print(f'From:\n{file}\nTo:\n{update_file}')
+                # print(f'update_file:\n{update_file}')
+                # print(f'\nFrom:\n{file}\nTo:\n{update_file}\n')
                 copy2(file, update_file)
 
-    Path(log_file).replace(Path(name_upd_folder).joinpath(Path(log_file).name))        
+            cloud_storage_files.remove(file)
+            # print(f'\n-from list removed file:\n{file}\n')
+
+    Path(log_file).replace(path_disk.joinpath(name_upd_folder).joinpath(Path(log_file).name)) 
+
+    for new_file in cloud_storage_files:
+        # копіюємо нові файли 
+        update_file = ((path_disk.joinpath(name_upd_folder)).joinpath(str(new_file.parent).replace(str(path_disk),'',1)[1:])).joinpath(new_file.name)
+        update_file.parent.mkdir(exist_ok=True, parents=True)
+        # print(f'\nNew from:\n{new_file}\nTo:\n{update_file}\n')
+        copy2(file, update_file)
+
+           
     # по завершенні переносимолог-файл до папки апдейта
-    print(name_upd_folder)
+    # print(name_upd_folder)
 
 def create_fix_file(DIR_PATH):
     to_write = [f'{str(el)}\t{el.stat().st_size}\t{int(el.stat().st_mtime)}\n' for el in cloud_storage_files]
@@ -91,8 +119,16 @@ def create_fix_file(DIR_PATH):
     with open(DIR_PATH.joinpath(f'{name_log}.txt'), 'w', encoding='utf-8-sig') as fh:  # encoding='utf_8'
         fh.writelines(to_write)
 
-def unpack_updates():
-    pass
+def unpack_updates(upd_file_log):
+    # if not file.exists():
+    #     print(f'!Old file must be deleted?: \n{file}')
+    #     if input('y or n? ') == 'y':
+    #         file.unlink()
+    #     continue
+    print(f'{upd_file_log.parent}')
+
+    # upd_file_log.unlink()
+    
 
 
 def main() -> NoReturn:
@@ -104,11 +140,11 @@ def main() -> NoReturn:
         input('No tasks (missing \"config.txt\"). Press \"Enter\" to exit. ')
         exit()
 
-    upd_folder = check_upd_folder(DIR_PATH)
-    if upd_folder:
-        unpack_updates()  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    upd_folder_log_file = check_upd_folder(DIR_PATH)
+    if upd_folder_log_file:
+        unpack_updates(upd_folder_log_file)  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # dell inner log in up function
-        main()  # !!!!!!!!!!!!
+  #      main()  # !!!!!!!!!!!!
         # exit()
     else:
         log_file = check_log_file(DIR_PATH)
