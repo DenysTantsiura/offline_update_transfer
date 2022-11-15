@@ -153,3 +153,4 @@ cython_debug/
 *.7z
 *.txt
 *.777
+*.epgz

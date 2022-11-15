@@ -18,15 +18,11 @@ def scanning(folder: Path) -> None:
             None
     """
     for item in folder.iterdir():
-        # If the current element is a folder,
-        # add it to the FOLDERS list and check the next element
-        # (after scanning this new folder).
+        # If the current element is a folder scan this folder
         if item.is_dir():
             scanning(item)
-
             continue
-
-    # Working with a file if the element is not a folder
+    # Save a path of file if the element is not a folder
         cloud_storage_files.append(item)
 
 def check_log_file(folder):
@@ -64,7 +60,7 @@ def scan_report(config):
 
 def create_update(path_disk, log_file):
     name_upd_folder = str(datetime.now().date())
-    Path(name_upd_folder).mkdir(exist_ok=True, parents=True)
+    path_disk.joinpath(name_upd_folder).mkdir(exist_ok=True, parents=True)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # scan_report(config)
 
@@ -106,7 +102,6 @@ def create_update(path_disk, log_file):
         update_file.parent.mkdir(exist_ok=True, parents=True)
         # print(f'\nNew from:\n{new_file}\nTo:\n{update_file}\n')
         copy2(file, update_file)
-
            
     # по завершенні переносимолог-файл до папки апдейта
     # print(name_upd_folder)
@@ -145,7 +140,7 @@ def main() -> NoReturn:
         unpack_updates(upd_folder_log_file)  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # dell inner log in up function
   #      main()  # !!!!!!!!!!!!
-        # exit()
+        
     else:
         log_file = check_log_file(DIR_PATH)
         if log_file:
@@ -155,16 +150,10 @@ def main() -> NoReturn:
         else:
             scan_report(config)
             create_fix_file(DIR_PATH)
-        
-       
+               
         # create_update()
 
-
-
-
     # print(cloud_storage_files)
-
-
 
     # with open(DIR_PATH.joinpath(f'{name_log}.txt'), 'r', encoding='utf-8-sig') as fh:  # encoding='utf_8'
     #     print(fh.readlines())
@@ -182,8 +171,6 @@ def main() -> NoReturn:
     #  else (if exist *(data).csv:)
         # scan way create list(file path, date, size)  
         # and compare it within into data.csv if in 
-
-
 
 if __name__ == '__main__':
     main()
