@@ -44,6 +44,19 @@ def copy_file(file: Path, path_disk: Path, name_upd_folder: str):
     target_path.parent.mkdir(exist_ok=True, parents=True)
     copy2(file, target_path)
 
+@check_file_operation
+def restore_file(file: Path, backup_folder_name: str):
+    # p0 = path_disk.joinpath(name_upd_folder)
+    print(f'restore:\n{file}')
+    print(f'backup_folder_name:\n{backup_folder_name}\n')
+    p1 = str(file.parent).replace(f'{backup_folder_name}','',1)
+    print(f'p1:\n{p1}')
+    print(f'file.name:\n{file.name}\n')
+    # p2 = p0.joinpath(p1[1:])
+    target_path = Path(p1).joinpath(file.name)
+    print(f'target_path:\n{target_path}\n')
+    target_path.parent.mkdir(exist_ok=True, parents=True)
+    copy2(file, target_path)
 
 @check_file_operation
 def move_file(source_path: Path, target_path: Path):
@@ -167,7 +180,7 @@ def restore_from_backup(log_active_backup: Path, path_disk: Path, arch_folder: s
 
     for file in cloud_storage_files:
 
-        copy_file(Path(file), Path('D:\\projects\\offline_update_transfer'), '')
+        restore_file(Path(file), str(parent_folder).replace(str(parent_folder.parent),''))
     
 
 def main() -> NoReturn:
